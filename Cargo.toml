@@ -1,0 +1,27 @@
+[package]
+name = "no-claude-trailer"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT"
+authors = ["Andrew McCall"]
+description = "Strip AI attribution trailers from git commit messages. Dependency free."
+keywords = ["git", "hook", "commit", "trailer"]
+categories = ["command-line-utilities", "development-tools"]
+
+# This crate has no dependencies, and a test enforces it (tests/no_dependencies.rs).
+# Everything it needs comes from std and the `git` binary already on your PATH.
+
+[lib]
+name = "no_claude_trailer"
+path = "src/lib.rs"
+
+[[bin]]
+name = "git-no-claude-trailer"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = true
