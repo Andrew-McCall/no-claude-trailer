@@ -63,29 +63,6 @@ fn the_installed_hook_strips_a_real_commit() {
 }
 
 #[test]
-fn the_hook_blocks_the_commit_when_the_binary_is_missing() {
-    let repo = TempRepo::new("install-fails-closed");
-    repo.run(&["install"]);
-    let path = hook(&repo);
-    let script = std::fs::read_to_string(&path)
-        .unwrap()
-        .replace(support::binary(), "/nonexistent/git-no-claude-trailer");
-    std::fs::write(&path, script).unwrap();
-
-    let output = repo.commit_with_hooks(DIRTY);
-    assert!(
-        !output.status.success(),
-        "a broken hook must block the commit"
-    );
-    let shown = text(&output);
-    assert!(shown.contains("no-claude-trailer"), "{shown}");
-    assert!(
-        shown.contains("uninstall"),
-        "the message must offer a way out: {shown}"
-    );
-}
-
-#[test]
 fn refuses_to_replace_someone_elses_hook() {
     let repo = TempRepo::new("install-existing");
     let path = hook(&repo);

@@ -207,16 +207,17 @@ fn refuse_if_unrepresentable(commit: &Commit, finding: &Finding) -> Result<(), F
              with `git rebase -i --reword {short}`."
         )));
     }
-    if let Some(encoding) = &commit.encoding {
-        if !encoding.eq_ignore_ascii_case("utf-8") && !encoding.eq_ignore_ascii_case("utf8") {
-            return Err(Failure::refused(format!(
+    if let Some(encoding) = &commit.encoding
+        && !encoding.eq_ignore_ascii_case("utf-8")
+        && !encoding.eq_ignore_ascii_case("utf8")
+    {
+        return Err(Failure::refused(format!(
                 "commit {short} declares the encoding {encoding}, which cannot be preserved when rebuilding it"
             ))
             .fix(
                 "Nothing has been changed. Re-encode the message to UTF-8, \
                  or strip this commit by hand.",
             ));
-        }
     }
     Ok(())
 }

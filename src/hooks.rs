@@ -64,10 +64,10 @@ pub fn global_hooks_dir(git: &Git) -> PathBuf {
 
 /// `$XDG_CONFIG_HOME/git/hooks`, or `~/.config/git/hooks`.
 fn default_global_directory() -> PathBuf {
-    if let Some(xdg) = std::env::var_os("XDG_CONFIG_HOME") {
-        if !xdg.is_empty() {
-            return PathBuf::from(xdg).join("git/hooks");
-        }
+    if let Some(xdg) = std::env::var_os("XDG_CONFIG_HOME")
+        && !xdg.is_empty()
+    {
+        return PathBuf::from(xdg).join("git/hooks");
     }
     let home = std::env::var_os("HOME").unwrap_or_default();
     PathBuf::from(home).join(".config/git/hooks")

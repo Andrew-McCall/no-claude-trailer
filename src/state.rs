@@ -122,10 +122,10 @@ fn count_unpushed(git: &Git) -> Result<Option<(usize, usize)>, Failure> {
     let mut dirty = 0;
     for id in &ids {
         let raw = git.cat_file_commit(id)?;
-        if let Ok(commit) = Commit::parse(&raw) {
-            if Finding::examine(id, &commit, &rules).is_dirty() {
-                dirty += 1;
-            }
+        if let Ok(commit) = Commit::parse(&raw)
+            && Finding::examine(id, &commit, &rules).is_dirty()
+        {
+            dirty += 1;
         }
     }
     Ok(Some((ids.len(), dirty)))

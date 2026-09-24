@@ -133,10 +133,10 @@ fn find_removals(
     // Start at 1: the subject line is never a candidate.
     for index in 1..editable {
         let line = lines[index];
-        if let Some(prefix) = &options.comment_prefix {
-            if line.starts_with(prefix.as_str()) {
-                continue;
-            }
+        if let Some(prefix) = &options.comment_prefix
+            && line.starts_with(prefix.as_str())
+        {
+            continue;
         }
         if let Some(hit) = rules.match_line(line) {
             removed[index] = true;

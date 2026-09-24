@@ -1,12 +1,16 @@
 # no-claude-trailer
 
-A git plugin that keeps AI attribution out of your commit messages.
-
-_Dependency Free_
+A dependency-free Git plugin that keeps AI attribution out of your commit messages.
 
 ## Usage
 
-Set it up by answering a few questions:
+First install it:
+
+```sh
+cargo install no-claude-trailer
+```
+
+Then set it up interactively:
 
 ```sh
 git no-claude-trailer setup
@@ -20,112 +24,116 @@ Installed at /home/andrew/work/demo/.git/hooks/commit-msg
   Stripping: claude
 ```
 
-From then on, attribution never lands. Commit this:
+From then on, AI attribution is removed before a commit is created.
 
-```
-Add retry backoff
+## Existing commits
 
-Retries now back off exponentially.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_011c
-```
-
-and this is what the repository keeps:
-
-```
-Add retry backoff
-
-Retries now back off exponentially.
-```
-
-Commits that slipped through before you installed the hook can be found and
-rewritten:
+Commits created before installing the hook can be inspected and cleaned:
 
 ```sh
 git no-claude-trailer check
 2 of 3 commits carry AI attribution:
   837ad48  Fix pagination off-by-one  Co-Authored-By
   5ad7c5c  Tidy imports               Generated with [Claude Code], Claude session link
+```
 
+Then rewrite them with:
+
+```sh
 git no-claude-trailer clean
 Rewrote 2 commits on main
 Backup at refs/no-claude-trailer/backup/main-20260917T121744
 ```
 
-`git no-claude-trailer` on its own shows what is set up and what to do next.
+The original branch tip is saved before rewriting, so the operation can be undone.
 
-### Commands
+Running the command without arguments shows the current configuration and what to do next:
 
-| Command | What it does |
-| --- | --- |
-| `setup` | Asks where the hook should go and which agents to strip, then does it |
-| `status` | Shows the repository, the hook, the agents and your unpushed commits |
-| `install` / `uninstall` | Writes the commit-msg hook, or removes it and restores what it replaced |
-| `check` / `clean` | Reports attribution, or rewrites the commits to remove it |
-| `filter` | Strips a message file or stdin; this is what the hook runs |
+```sh
+git no-claude-trailer
+```
 
-By default `check` and `clean` only look at what you haven't pushed, so
-published history is never rewritten unless you pass `--range` or `--all`.
-Stripped agents default to just `claude`; add more with
-`--agents=claude,copilot` (`copilot`, `cursor`, `codex`, `gemini`, `devin`,
-`aider`, and `bot` for any bot co-author are built in).
+## Commands
 
-Everything the hook needs — which agents, which extra trailers — lives in
-git config, so there's nothing else to manage:
+| Command     | Description                                                         |
+| ----------- | ------------------------------------------------------------------- |
+| `setup`     | Interactively configures and installs the hook                      |
+| `status`    | Shows the repository, hook, configured agents, and unpushed commits |
+| `install`   | Installs the `commit-msg` hook                                      |
+| `uninstall` | Removes the hook and restores anything it replaced                  |
+| `check`     | Reports commits containing AI attribution                           |
+| `clean`     | Rewrites commits to remove AI attribution                           |
+| `filter`    | Filters a commit-message file or stdin                              |
+
+By default, `check` and `clean` only inspect commits that have not been pushed. Published history is never rewritten unless you explicitly provide `--range` or `--all`.
+
+## Agents
+
+Claude is enabled by default.
+
+Additional agents can be selected with:
+
+```sh
+git no-claude-trailer install --agents=claude,copilot
+```
+
+Built-in profiles include:
+
+- `claude`
+- `copilot`
+- `cursor`
+- `codex`
+- `gemini`
+- `devin`
+- `aider`
+- `bot` — generic bot co-authors
+
+Agents can also be added through Git configuration:
 
 ```sh
 git config --add noclaudetrailer.agent copilot
 ```
 
+Everything the hook needs is stored in Git configuration. There is no additional configuration file to maintain.
+
 ## How It Works
 
-A [git trailer](https://git-scm.com/docs/git-interpret-trailers) is a
-`Key: value` line at the end of a commit message, and it's where coding
-agents sign their work — `Co-Authored-By: Claude`, `Claude-Session: …`, a
-`Generated with …` line and the session URL beneath it. Nothing wrong with
-the convention; it just belongs to the tool rather than the history, and once
-it's in a commit it stays there.
+Coding agents commonly add attribution to commit messages using Git trailers and related metadata, such as:
 
-A [`commit-msg` hook](https://git-scm.com/docs/githooks#_commit_msg) rewrites
-the message before each commit lands, so nothing new arrives carrying
-attribution. For commits that already have it, `clean` rebuilds them with
-`git commit-tree` and moves the branch — trees, authors, dates and merges are
-all carried across untouched, and the old tip is saved as a ref first so it's
-always one `git reset --hard` away from undone.
-
-Matching is a small table of known agents, not a pattern language — each one
-is a set of lowercase needles to look for, and adding one is adding an entry.
-No regex engine, no config format of its own. The stripping is careful about
-a few things a naive version gets wrong: subject lines are never touched,
-nothing past the diff's scissors line is scanned, and a message that would be
-left as nothing but attribution is an error rather than an empty commit.
-
-The library works on its own, too:
-
-```rust
-use no_claude_trailer::message::{strip, Options};
-use no_claude_trailer::profiles::Rules;
-
-fn main() {
-    let rules = Rules::from_names(&["claude"]).unwrap();
-    let message = "Fix pagination\n\nCo-Authored-By: Claude <noreply@anthropic.com>\n";
-    let cleaned = strip(message, &rules, &Options::commit_object()).unwrap();
-    println!("{}", cleaned.message); // Fix pagination
-}
+```text
+Co-Authored-By: Claude <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_011c
 ```
 
-## Installing
+Some agents also add generated-by text and session URLs.
 
-```sh
-cargo install no-claude-trailer
-```
+A [`commit-msg` hook](https://git-scm.com/docs/githooks#_commit_msg) runs before Git creates the commit and filters the message. This prevents new commits from acquiring unwanted attribution.
 
-Or build from a local checkout with `cargo install --path .`. Either way the
-binary is `git-no-claude-trailer`, which is what lets git find it as
-`git no-claude-trailer`.
+For existing commits, `clean` rebuilds the affected history using `git commit-tree` and moves the branch to the rewritten commits. Trees, authors, dates, parents, and merges are preserved. The original tip is saved under a backup ref before anything is rewritten.
+
+Matching is deliberately conservative. Each built-in agent profile contains a small set of lowercase strings used to identify its attribution. There is no regex engine, pattern language, or separate configuration format.
+
+The filtering also handles a few important edge cases:
+
+- Subject lines are never modified.
+- Content after Git's diff-scissors marker is ignored.
+- Only attribution matching a configured agent is removed.
+- A message that would contain nothing except attribution is rejected rather than turned into an empty commit.
+
+## Design
+
+The project is intentionally small:
+
+- Dependency-free at runtime
+- Native Rust implementation
+- No external configuration files
+- Git configuration for agent selection
+- Safe history rewriting with automatic backup refs
+- Conservative commit-message filtering
+
+## Feedback
+
+Issues, suggestions, and feedback are very welcome. If you find something that does not work as expected, please open an issue and let me know.
 
 ## License
 
