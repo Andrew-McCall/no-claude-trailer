@@ -6,6 +6,8 @@ rust-version = "1.85"
 license = "MIT"
 authors = ["Andrew McCall"]
 description = "Strip AI attribution trailers from git commit messages. Dependency free."
+readme = "README.md"
+repository = "https://github.com/Andrew-McCall/no-claude-trailer"
 keywords = ["git", "hook", "commit", "trailer"]
 categories = ["command-line-utilities", "development-tools"]
 
