@@ -2,15 +2,57 @@
 
 A dependency-free Git plugin that keeps AI attribution out of your commit messages.
 
-## Usage
+## Install
 
-First install it:
+Prebuilt binaries are attached to every
+[release](https://github.com/Andrew-McCall/no-claude-trailer/releases). Download the archive for
+your platform, unpack it, and put `git-no-claude-trailer` somewhere on your `PATH`:
+
+| Platform                | Archive                                          |
+| ----------------------- | ------------------------------------------------ |
+| macOS, Apple silicon    | `...-aarch64-apple-darwin.tar.gz`                |
+| macOS, Intel            | `...-x86_64-apple-darwin.tar.gz`                 |
+| Linux x86-64            | `...-x86_64-unknown-linux-gnu.tar.gz`            |
+| Linux arm64             | `...-aarch64-unknown-linux-gnu.tar.gz`           |
+| Linux x86-64, static    | `...-x86_64-unknown-linux-musl.tar.gz`           |
+| Linux arm64, static     | `...-aarch64-unknown-linux-musl.tar.gz`          |
+| Windows x86-64          | `...-x86_64-pc-windows-gnu.zip`                  |
+
+The `musl` archives are statically linked and need no system libraries, which makes them the safer
+choice for older distributions and minimal containers. The Windows build targets the GNU ABI and
+needs no Visual C++ runtime.
+
+```sh
+tar -xzf git-no-claude-trailer-1.0.0-aarch64-apple-darwin.tar.gz
+sudo install git-no-claude-trailer-1.0.0-aarch64-apple-darwin/git-no-claude-trailer /usr/local/bin
+```
+
+Each release ships a `SHA256SUMS` file covering every archive:
+
+```sh
+shasum -a 256 -c SHA256SUMS
+```
+
+Alternatively, install from crates.io:
 
 ```sh
 cargo install no-claude-trailer
 ```
 
-Then set it up interactively:
+Or build from source:
+
+```sh
+git clone https://github.com/Andrew-McCall/no-claude-trailer
+cd no-claude-trailer
+cargo install --path .
+```
+
+Git discovers the binary as a subcommand because of its `git-` prefix, so `git no-claude-trailer`
+works as soon as it is on your `PATH`.
+
+## Usage
+
+Set it up interactively:
 
 ```sh
 git no-claude-trailer setup
