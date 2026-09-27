@@ -413,11 +413,9 @@ mod tests {
     #[test]
     fn the_exact_changes_are_shown_before_confirming() {
         let (_, shown) = run("2\n1,2\ny\ny\nn\n");
+        let hook = state().global_hooks_dir.join(hooks::HOOK_NAME);
         assert!(shown.contains("About to write"), "{shown}");
-        assert!(
-            shown.contains("/home/tester/.config/git/hooks/commit-msg"),
-            "{shown}"
-        );
+        assert!(shown.contains(&hook.display().to_string()), "{shown}");
         assert!(shown.contains("core.hooksPath"), "{shown}");
         assert!(
             shown.contains("noclaudetrailer.agent = claude, copilot"),
