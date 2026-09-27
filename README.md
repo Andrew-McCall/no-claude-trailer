@@ -16,11 +16,11 @@ your platform, unpack it, and put `git-no-claude-trailer` somewhere on your `PAT
 | Linux arm64             | `...-aarch64-unknown-linux-gnu.tar.gz`           |
 | Linux x86-64, static    | `...-x86_64-unknown-linux-musl.tar.gz`           |
 | Linux arm64, static     | `...-aarch64-unknown-linux-musl.tar.gz`          |
-| Windows x86-64          | `...-x86_64-pc-windows-gnu.zip`                  |
+| Windows x86-64          | `...-x86_64-pc-windows-msvc.zip`                 |
 
 The `musl` archives are statically linked and need no system libraries, which makes them the safer
-choice for older distributions and minimal containers. The Windows build targets the GNU ABI and
-needs no Visual C++ runtime.
+choice for older distributions and minimal containers. The Windows build is a native MSVC binary
+with the CRT linked statically, so it needs no Visual C++ redistributable.
 
 ```sh
 tar -xzf git-no-claude-trailer-1.0.0-aarch64-apple-darwin.tar.gz
